@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <random>
 #include <algorithm>
+#include <map>
+
 
 
 using namespace std;
@@ -24,6 +26,11 @@ int main() {
     cin >> seed;
 
     vector < vector <string> > data = loadData(instance);
+    vector <Course> courses = processCourses(data);
+    Instance bacpInstance = createInstance(data, courses);
+
+
+    cout << bacpInstance.years << " " << bacpInstance.num_courses;
     //cout << data[0][0];
 
 	/*

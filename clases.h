@@ -51,7 +51,7 @@ public:
 		num_undesired_periods = 0;
 		courses.clear();
 	}
-	Instance(int y, int ppy, int ncour, int ncurr, int min, int max, int nprec, int nund){
+	Instance(int y, int ppy, int ncour, int ncurr, int min, int max, int nprec, int nund, vector<Course> courseVector){
 		years = y;
 		periods_per_year = ppy;
 		num_courses = ncour;
@@ -60,6 +60,7 @@ public:
 		max_load = max;
 		num_precedences = nprec;
 		num_undesired_periods = nund;
+		courses = courseVector;
 	}
 	void addCourse(Course c){
 		courses.push_back(c);

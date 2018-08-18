@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
+#include <map>
 
 using namespace std;
 
@@ -63,7 +64,11 @@ vector <vector <string> > loadData(string filename){
 	    				break;
 	    			}
 	    			if(wordsToFind[i]=="Curr"){
-	    				curricula_flag = true;
+	    				curricula.push_back(line);
+	    				num_curricula--;
+	    				if(num_curricula>0){
+	    					curricula_flag = true;
+	    				}
 	    				break;
 	    			}
 	    			if(wordsToFind[i]=="PRECEDENCES:"){
@@ -79,7 +84,7 @@ vector <vector <string> > loadData(string filename){
     	}
     	else if(courses_flag == true && num_courses > 0){
     		//cout << "PASO POR ACA 5\n";
-    		courses.push_back(line);
+    		courses.push_back("&"+line+"\n");
     		num_courses--;
     		if(num_courses == 0){
     			courses_flag = false;
@@ -89,7 +94,7 @@ vector <vector <string> > loadData(string filename){
     	}
     	else if(curricula_flag == true && num_curricula > 0){
     		//cout << "PASO POR ACA 5\n";
-    		curricula.push_back(line);
+    		curricula.push_back("&"+line+"\n");
     		num_curricula--;
     		if(num_curricula == 0){
     			curricula_flag = false;
@@ -98,7 +103,7 @@ vector <vector <string> > loadData(string filename){
     		continue;
     	}
     	else if(precedences_flag == true && num_precedences > 0){
-    		precedences.push_back(line);
+    		precedences.push_back("&"+line+"\n");
     		num_precedences--;
     		if(num_precedences == 0){
     			precedences_flag = false;
@@ -106,10 +111,9 @@ vector <vector <string> > loadData(string filename){
     		}
     		continue;
     	}
-    	
     }
     instanceTxt.close();
-    for(int i=0; i<info.size();i++){ 
+    /*for(int i=0; i<info.size();i++){ 
         cout << info[i];
     }
     for(int i=0; i<courses.size();i++){ 
@@ -120,25 +124,77 @@ vector <vector <string> > loadData(string filename){
     }
     for(int i=0; i<precedences.size();i++){ 
         cout << precedences[i] <<"\n";
-    }
-
-    //Extract the courses of the instance
-
-
-    //Extract the curricula of the instance
-    //Extract the procedences of the instance
-
-
-
+    }*/
     data.push_back(info);
+    data.push_back(courses);
+    data.push_back(curricula);
+    data.push_back(precedences);
     return data;
 }
 
 
+vector <Course> processCourses(vector < vector <string> > data){
+	vector <Course> coursesVector; 
+	vector <string> courses, precedences;
+	//map <string, string> linked_precedences;
+	vector < vector <string> > linked_precedences;
+	courses = data[1];
+	precedences = data[3];
+	for (int j=0; j<precedences.size(); j++){
+		vector <string> temp_vector;
+		string course_name = ExtractString(precedences[j],"&"," ");
+		temp_vector.push_back(course_name);
+		string precedence_name = ExtractString(precedences[j]," ","\n");
+		temp_vector.push_back(precedence_name);
+		linked_precedences.push_back(temp_vector);
+		//linked_precedences[course_name] = precedence_name;
+	}
+	for(int i=0; i<courses.size(); i++){
+		string name = ExtractString(courses[i],"&"," ");
+		string tmp1 = ExtractString(courses[i]," ","\n");
+		vector <string> temp_precedences;
+		int credits = std::stoi(tmp1);
+		for(int k=0; k<linked_precedences.size(); k++){
+			if(linked_precedences[k][0]== name){
+				temp_precedences.push_back(linked_precedences[k][1]);
+			}
+		}
+		/*map<string, string>::iterator iter;
+		for(iter = linked_precedences.begin(); iter!=linked_precedences.end(); iter++){
+			if(iter->first == name){
+				temp_precedences.push_back(iter->second);
+			}
+		}*/
+		Course temp_course(name, credits, temp_precedences);
+		coursesVector.push_back(temp_course);
+	}
+	//cout << coursesVector[10].name <<" " <<  coursesVector[10].credits << " " << coursesVector[10].precedences.size() << "\n";
+	return coursesVector;
+}
 
 
-void processData(Instance instance){
+Instance createInstance(vector <vector <string> > data, vector < Course> courses){
+	vector <string> info = data[0];
+	string years = ExtractString(info[0],"YEARS: ","\n");
+	string ppy = ExtractString(info[1],"PERIODS_PER_YEAR: ","\n");
+	string n_cour = ExtractString(info[2],"NUM_COURSES: ","\n");
+	string n_curri = ExtractString(info[3],"NUM_CURRICULA: ","\n");
+	string min = ExtractString(info[4],"MIN_MAX_COURSE_LOAD_PER_PERIOD: "," ");
+	string max = ExtractString(info[4],min+" ","\n");
+	string prec = ExtractString(info[5],"NUM_PRECEDENCES: ","\n");
+	string n_und = ExtractString(info[6],"NUM_UNDESIRED_PERIODS: ","\n");
 
+	int years2 = std::stoi(years);
+	int ppy2 = std::stoi(ppy);
+	int n_cour2 = std::stoi(n_cour);
+	int n_curri2 = std::stoi(n_curri);
+	int min2 = std::stoi(min);
+	int max2 = std::stoi(max);
+	int prec2 = std::stoi(prec);
+	int n_und2 = std::stoi(n_und);
+
+	//Instance bacpInstance(years2, ppy2, n_cour2, n_curri2, min2, max2, prec2, n_und2, courses);
+	return bacpInstance;
 }
 
 
@@ -147,43 +203,14 @@ void processData(Instance instance){
 
 
 
-    /*
-    string firewallLogString = "";
-    ifstream firewallLog("instances/csplib8.gbac.txt");
-    ofstream condensedFirewallLog("instances/adsasdsa.txt");
-    if(firewallLog.fail())
-    {
-        cout << "The file does not exist. Please put the file at the instances folder" << endl;
-        system("PAUSE");
-        return 0;
-    }
-    vector<string>  data;
-    bool curricula = false;
-    while(!firewallLog.eof())
-    {
-        getline(firewallLog, firewallLogString);
 
-        if(curricula == true){
-        		data.push_back("CURRICULA:"+firewallLogString);
-            	//cout << firewallLogString;
-            	curricula = false;
-            }
 
-            for(int i = 0; i < 7; i++)
-            {
-                if(firewallLogString.find(wordsToFind[i]) != string::npos)
-                {
-                	data.push_back(firewallLogString);
-                }
-                else if (firewallLogString.find("CURRICULA") != string::npos){
-                	curricula = true;
-                }
-            }
-            
-    }
-    condensedFirewallLog.close();
-    firewallLog.close();
+/*
+void processData(vector < vector <string> > data){
+	vector <string> info, courses, curricula, precedences;
+	info = data[0];
+	courses = data[1];
+	curricula = data[2];
+	precedences = data[3];
 
-    for(int i=1; i<data.size();i++){ 
-        cout << data[i] << "\n";
-    }*/
+}*/
