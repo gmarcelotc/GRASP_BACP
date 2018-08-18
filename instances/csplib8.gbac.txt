@@ -1,0 +1,98 @@
+DESCRIPTION: translation in .gbac format of file bacp8.dat in CSPlib
+YEARS: 4
+PERIODS_PER_YEAR: 2
+NUM_COURSES: 46
+NUM_CURRICULA: 1
+MIN_MAX_COURSE_LOAD_PER_PERIOD: 2 10 
+NUM_PRECEDENCES: 33
+NUM_UNDESIRED_PERIODS: 0
+
+COURSES:
+dew100 1
+fis100 3
+hcw310 1
+iwg101 2
+mat190 4
+mat192 4
+dew101 1
+fis101 5
+iwi131 3
+mat191 4
+mat193 4
+fis102 5
+hxwxx1 1
+iei134 3
+iei141 3
+mat194 4
+dewxx0 1
+hcw311 1
+iei132 3
+iei133 3
+iei142 3
+iei162 3
+iwn170 3
+mat195 3
+hxwxx2 1
+iei231 4
+iei241 4
+iei271 3
+iei281 3
+iwn261 3
+hfw120 2
+iei233 4
+iei238 3
+iei261 3
+iei272 3
+iei273 3
+iei161 3
+iei232 3
+iei262 3
+iei274 3
+iwi365 3
+iwn270 3
+hrw130 2
+iei218 3
+iei219 3
+iei248 3
+
+CURRICULA:
+Curr1 46 dew100 fis100 hcw310 iwg101 mat190 mat192 dew101 fis101 iwi131 mat191 mat193 fis102 hxwxx1 iei134 iei141 mat194 dewxx0 hcw311 iei132 iei133 iei142 iei162 iwn170 mat195 hxwxx2 iei231 iei241 iei271 iei281 iwn261 hfw120 iei233 iei238 iei261 iei272 iei273 iei161 iei232 iei262 iei274 iwi365 iwn270 hrw130 iei218 iei219 iei248
+
+PRECEDENCES:
+dew101 dew100
+fis101 fis100
+fis101 mat192
+mat191 mat190
+mat193 mat190
+mat193 mat192
+fis102 fis101
+fis102 mat193
+iei134 iwi131
+iei141 iwi131
+mat194 mat191
+mat194 mat193
+dewxx0 dew101
+hcw311 hcw310
+iei132 iei134
+iei133 iei134
+iei142 iei141
+mat195 mat194
+iei231 iei134
+iei241 iei142
+iei271 iei162
+iei281 mat195
+iei233 iei231
+iei238 iei231
+iei261 iwn261
+iei272 iei271
+iei273 iei271
+iei161 iwn261
+iei232 iei273
+iei262 iwn261
+iei274 iei273
+iei219 iei232
+iei248 iei233
+
+UNDESIRED_PERIODS:
+
+END.

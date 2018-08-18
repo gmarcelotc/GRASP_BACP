@@ -1,0 +1,9 @@
+called: /usr/bin/g++
+	/Users/znmarcelo/Downloads/BACP
+	/usr/bin/g++
+	-Wall
+	-m32
+	main.cpp
+	-o
+	bacp
+
