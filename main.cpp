@@ -24,7 +24,7 @@ int main() {
     cin >> seed;
 
     vector < vector <string> > data = loadData(instance);
-    cout << data[0][0];
+    //cout << data[0][0];
 
 	/*
     vector <string> data =loadData(instance);
