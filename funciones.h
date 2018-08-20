@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
+#include <algorithm>
 #include <map>
 
 using namespace std;
@@ -25,15 +26,15 @@ vector <vector <string> > loadData(string filename){
 	vector <vector <string> > data;
 	vector <string> info, courses, curricula, precedences;
 	static const string arr[] = {"YEARS","PERIODS_PER_YEAR","NUM_COURSES","NUM_CURRICULA",
-	"MIN_MAX_COURSE_LOAD_PER_PERIOD","NUM_PRECEDENCES","NUM_UNDESIRED_PERIODS", "COURSES:","Curr", "PRECEDENCES:"};
+	"MIN_MAX_COURSE_LOAD_PER_PERIOD","MIN_MAX_AMOUNT_COURSES_PER_PERIOD","NUM_PRECEDENCES","NUM_UNDESIRED_PERIODS", "COURSES:","Curr", "PRECEDENCES:"};
 	vector <string> wordsToFind (arr, arr + sizeof(arr) /sizeof(arr[0]));
 	string line =  "";
 	int num_courses, num_precedences, num_curricula;
 	bool courses_flag = false;
 	bool precedences_flag = false;
 	bool curricula_flag = false;
-	//ifstream instanceTxt("instances/"+filename+".txt");
-	ifstream instanceTxt("instances/csplib8.txt");
+	ifstream instanceTxt("instances/"+filename+".txt");
+	//ifstream instanceTxt("instances/csplib8.txt");
 	if(instanceTxt.fail()){
         cout << "The file does not exist. Please put the file at the instances folder" << endl;
         return data;
@@ -129,6 +130,9 @@ vector <vector <string> > loadData(string filename){
     data.push_back(courses);
     data.push_back(curricula);
     data.push_back(precedences);
+
+    cout << "Reading data from instance.txt" << endl;
+
     return data;
 }
 
@@ -168,34 +172,184 @@ vector <Course> processCourses(vector < vector <string> > data){
 		Course temp_course(name, credits, temp_precedences);
 		coursesVector.push_back(temp_course);
 	}
-	//cout << coursesVector[10].name <<" " <<  coursesVector[10].credits << " " << coursesVector[10].precedences.size() << "\n";
+	cout << "Procesing courses from read data" << endl;
+
 	return coursesVector;
 }
 
 
-Instance createInstance(vector <vector <string> > data, vector < Course> courses){
+Instance createInstance(vector <vector <string> > data, vector < Course> courses, string instance_type){
 	vector <string> info = data[0];
 	string years = ExtractString(info[0],"YEARS: ","\n");
 	string ppy = ExtractString(info[1],"PERIODS_PER_YEAR: ","\n");
 	string n_cour = ExtractString(info[2],"NUM_COURSES: ","\n");
 	string n_curri = ExtractString(info[3],"NUM_CURRICULA: ","\n");
-	string min = ExtractString(info[4],"MIN_MAX_COURSE_LOAD_PER_PERIOD: "," ");
-	string max = ExtractString(info[4],min+" ","\n");
-	string prec = ExtractString(info[5],"NUM_PRECEDENCES: ","\n");
-	string n_und = ExtractString(info[6],"NUM_UNDESIRED_PERIODS: ","\n");
-
+	string prec = ExtractString(info[info.size()-2],"NUM_PRECEDENCES: ","\n");
+	string n_und = ExtractString(info[info.size()-1],"NUM_UNDESIRED_PERIODS: ","\n");
 	int years2 = std::stoi(years);
 	int ppy2 = std::stoi(ppy);
 	int n_cour2 = std::stoi(n_cour);
 	int n_curri2 = std::stoi(n_curri);
-	int min2 = std::stoi(min);
-	int max2 = std::stoi(max);
 	int prec2 = std::stoi(prec);
 	int n_und2 = std::stoi(n_und);
 
-	//Instance bacpInstance(years2, ppy2, n_cour2, n_curri2, min2, max2, prec2, n_und2, courses);
-	return bacpInstance;
+	cout << "Creating instance class with all the data" << endl;
+	
+	if(instance_type == "csplib"){
+		string min_load = ExtractString(info[4],"MIN_MAX_COURSE_LOAD_PER_PERIOD: "," ");
+		string max_load = ExtractString(info[4],min_load+" ","\n");
+		string min_amount = ExtractString(info[5],"MIN_MAX_AMOUNT_COURSES_PER_PERIOD: "," ");
+		string max_amount = ExtractString(info[5],min_amount+" ","\n");
+		int minl = std::stoi(min_load);
+		int maxl = std::stoi(max_load);
+		int mina = std::stoi(min_amount);
+		int maxa = std::stoi(max_amount);
+		Instance bacpInstance(instance_type, years2, ppy2, n_cour2, n_curri2, minl, maxl, mina, maxa, prec2, n_und2, courses);
+		return bacpInstance;
+	}	
+	else if(instance_type == "UD"){
+		string min_load = ExtractString(info[4],"MIN_MAX_COURSE_LOAD_PER_PERIOD: "," ");
+		string max_load = ExtractString(info[4],min_load+" ","\n");
+		int minl = std::stoi(min_load);
+		int maxl = std::stoi(max_load);
+		Instance bacpInstance(instance_type, years2, ppy2, n_cour2, n_curri2, 0, 0, minl, maxl, prec2, n_und2, courses);
+		return bacpInstance;
+	}
+	else{
+		Instance bacpInstance;
+		return bacpInstance;
+	}
+	
 }
+
+int randomNumber(int a,int b){
+    unsigned seed = unsigned (chrono::system_clock::now().time_since_epoch().count());
+    default_random_engine generator(seed);
+    uniform_int_distribution<int> distribution(a,b);
+    int dice_roll = distribution(generator);
+    return dice_roll;
+}
+
+bool precedencesRestriction(Solution actual_solution, Course actual_course){
+	//cout << "Entro en funcion de pre-requisitos" << endl;
+	bool complies_with_precedence = false;
+	if(actual_course.precedences.size() == 0){
+		//cout << "Primer if de Pre-requisitos" << endl;
+		return true;
+	}
+	else{
+		for(int p=0; p<actual_course.precedences.size(); p++){
+			//cout << "Primer FOR de Pre-requisitos" << endl;
+			if(complies_with_precedence == true){
+				break;
+			}
+			for(int i=0; i<actual_solution.periods.size(); i++){
+				//cout << "Segundo FOR de Pre-requisitos" << endl;
+				if(complies_with_precedence == true){
+					break;
+				}
+				for(int j=0; j<actual_solution.periods[i].courses.size(); j++){
+					//cout << "Tercer FOR de Pre-requisitos" << endl;
+					if(actual_course.precedences[p] == actual_solution.periods[i].courses[j].name){
+						complies_with_precedence = true;
+						break;
+					}
+				}
+			}
+		}
+	}
+	return complies_with_precedence;
+}
+
+int miopeFunction(vector <Course> courses, Instance bacpInstance, Solution actual_solution ,Period current_period){
+	int alpha = randomNumber(0,6);
+	int beta = randomNumber(0,4);
+	for(int i=0; i<courses.size();i++){
+		if(current_period.load() + courses[i].credits <= bacpInstance.max_load - alpha &&
+			current_period.amount() + 1 <= bacpInstance.max_amount - beta){
+			//cout << "Entro en if de restricciones basicas" << endl;
+			if(precedencesRestriction(actual_solution, courses[i])){
+				return i;
+			}
+		}
+		//cout << "This course not meet restrictions" << endl;
+	}
+	return -1;
+}
+
+
+Solution graspBuildSolution(Instance bacpInstance, int l){
+
+	cout << "Begin to building solution" << endl;
+	int number_periods = bacpInstance.years*bacpInstance.periods_per_year;
+	vector <Course> courses = bacpInstance.courses;
+	Solution actual_solution;
+	Period current_period;
+	current_period.addCourse(courses[0]);
+	courses.erase(courses.begin());
+	bool error_flag = true;
+	while(courses.size()>0 && number_periods > 0 && error_flag){
+		vector <Course> courses_copy = courses;
+		vector <Course> LRC;
+		vector <int> index_for_LRC; 
+		while(LRC.size()<l){
+			//cout << "Entro while LRC" << endl;
+			int miopeValue = miopeFunction(courses_copy, bacpInstance, actual_solution, current_period);
+			//cout << "valor funcion miope: "<< miopeValue << endl;
+			if(miopeValue != -1){
+				//cout << "Saving into LRC" << endl;
+				LRC.push_back(courses_copy[miopeValue]);
+				index_for_LRC.push_back(miopeValue);
+				courses_copy.erase(courses_copy.begin()+miopeValue);
+			}
+			else if(current_period.load() >= bacpInstance.min_load &&
+					current_period.amount() >= bacpInstance.min_amount){
+				cout << "Saving period " << 9 -number_periods<< " to solution (" <<
+				current_period.amount() << " courses, "<<current_period.load() << " credits)" <<  endl;
+				actual_solution.addPeriod(current_period);
+				number_periods--;
+				current_period.clear();
+				break;
+			}
+			else{
+				//cout << "Error: Miss courses/Miss periods" << endl;
+				//error_flag = false;
+				break;
+			}
+		}
+		//cout << "LRC size: " << LRC.size()<< endl;
+		if(LRC.size()>1){
+			int random_index = randomNumber(1,LRC.size());
+			current_period.addCourse(LRC[random_index-1]);
+			cout << "Saving " << LRC[random_index-1].name <<" to period" << endl;
+			//courses.erase(courses.begin()+index_for_LRC[random_index-1]);
+			for(int j=0; j<courses.size();j++){
+				if(courses[j].name == LRC[random_index-1].name){
+					courses.erase(courses.begin()+j);
+					continue;
+				}
+			}
+		}
+		else if(LRC.size() == 1){
+			current_period.addCourse(LRC[0]);
+			cout << "Saving 2 " << LRC[0].name <<" to period" << endl;
+			//courses.erase(courses.begin()+index_for_LRC[0]);
+			for(int j=0; j<courses.size();j++){
+				if(courses[j].name == LRC[0].name){
+					courses.erase(courses.begin()+j);
+					continue;
+				}
+			}
+		}
+		
+		/*if(current_period.load >= bacpInstance.min_load &&
+			current_period.amount >= bacpInstance.min_amount){
+
+		}*/
+	}
+	return actual_solution;
+}
+
 
 
 
